@@ -1,7 +1,11 @@
 import streamlit as st
 from config.settings import Settings
 from backend.api_clients import CoreClient
-from backend.data_service import process_devices, process_m2m
+from backend.M2M.data_m2m import process_m2m
+from backend.Device.data_device import prepare_boards, prepare_kiwi
+import json
+import pandas as pd
+
 
 # Importamos las nuevas vistas
 from frontend.views import devices_view, m2m_view
@@ -17,7 +21,7 @@ if not st.session_state['token']:
     col1, col2, col3 = st.columns([1,2,1])
     with col2:
         st.title("🔐 Login Core")
-        if st.button("Conectar con Credenciales (.env)"):
+        if st.button("Conectar con Credenciales"):
             with st.spinner("Autenticando..."):
                 client = CoreClient()
                 token = client.login()
@@ -33,12 +37,32 @@ client = CoreClient(st.session_state['token'])
 
 with st.spinner("Descargando datos de la flota..."):
     # Descargamos
-    raw_dev = client.get_devices()
     raw_m2m = client.get_m2m()
+    raw_dev = client.get_devicesB()
+    raw_dev2 = client.get_devicesKiwi()
     
+   # Imprimir tipo
+    #print("RAW DEVICES KIWI (tipo):", type(raw_dev2))
+
+    # Mostrar claves principales del dict
+    #print("Claves del dict:", list(raw_dev2.keys()))
+
+    # Mostrar contenido completo de manera legible (opcional)
+    #print("Contenido completo formateado:")
+    #print(json.dumps(raw_dev2, indent=4))  #
+
     # Procesamos (Limpieza en data_service)
-    df_dev = process_devices(raw_dev)
     df_m2m = process_m2m(raw_m2m)
+
+    df_dev = prepare_boards(raw_dev)
+    df_dev2 = prepare_kiwi(raw_dev2)
+
+    #print("Columnas del DataFrame KIWI:", df_dev2.columns.tolist())
+    #print(df_dev2.head())
+
+    # Guardar a Excel
+    df_dev2.to_excel("kiwi.xlsx", index=False)
+
 
 # --- INTERFAZ GRÁFICA ---
 # Sidebar
@@ -55,7 +79,9 @@ tab1, tab2 = st.tabs(["📡 Dispositivos", "📶 Comunicaciones M2M"])
 with tab1:
     # Delegamos el pintado a la vista de dispositivos
     devices_view.render(df_dev)
+    devices_view.render(df_dev2)
 
 with tab2:
     # Delegamos el pintado a la vista de M2M
     m2m_view.render(df_m2m)
+

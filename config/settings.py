@@ -17,5 +17,6 @@ class Settings:
 
     # --- ENDPOINTS (TU PARTE: Verifica que coinciden con la documentación) ---
     URL_LOGIN = f"{BASE_URL}/users/sign-in"
-    URL_DEVICES = f"{BASE_URL}/devices"
+    URL_DEVICES = f"{BASE_URL}/boards"
+    URL_DEVICES2 = f"{BASE_URL}/kiwi"
     URL_M2M = f"{BASE_URL}/m2m"
