@@ -5,10 +5,10 @@ from backend.M2M.data_m2m import process_m2m
 from backend.Device.data_device import prepare_boards, prepare_kiwi
 import json
 import pandas as pd
-
+from backend.Info.data_info import process_devicesInfo
 
 # Importamos las nuevas vistas
-from frontend.views import devices_view, m2m_view
+from frontend.views import devices_view, m2m_view, info_view
 
 # --- CONFIGURACIÓN INICIAL ---
 st.set_page_config(page_title="Dashboard Flota", layout="wide", page_icon="📊")
@@ -40,6 +40,7 @@ with st.spinner("Descargando datos de la flota..."):
     raw_m2m = client.get_m2m()
     raw_dev = client.get_devicesB()
     raw_dev2 = client.get_devicesKiwi()
+    raw_info = client.get_deviceInfo()
     
    # Imprimir tipo
     #print("RAW DEVICES KIWI (tipo):", type(raw_dev2))
@@ -56,12 +57,15 @@ with st.spinner("Descargando datos de la flota..."):
 
     df_dev = prepare_boards(raw_dev)
     df_dev2 = prepare_kiwi(raw_dev2)
+    
 
     #print("Columnas del DataFrame KIWI:", df_dev2.columns.tolist())
     #print(df_dev2.head())
 
     # Guardar a Excel
     df_dev2.to_excel("kiwi.xlsx", index=False)
+
+    df_info = process_devicesInfo(raw_info)
 
 
 # --- INTERFAZ GRÁFICA ---
@@ -74,14 +78,20 @@ with st.sidebar:
         st.rerun()
 
 # Pestañas principales
-tab1, tab2 = st.tabs(["📡 Dispositivos", "📶 Comunicaciones M2M"])
+tab1, tab2, tab3 = st.tabs(["📡 Dispositivos", "📶 Comunicaciones M2M", "💽 Informacion de Software"])
 
 with tab1:
-    # Delegamos el pintado a la vista de dispositivos
-    devices_view.render(df_dev)
-    devices_view.render(df_dev2)
+    sub1, sub2 = st.tabs(["Boards", "Kiwi"])
+    with sub1:
+        devices_view.render(df_dev)
+    with sub2:
+        devices_view.render(df_dev2)
 
 with tab2:
     # Delegamos el pintado a la vista de M2M
     m2m_view.render(df_m2m)
+
+with tab3:
+
+    info_view.render(df_info)
 
