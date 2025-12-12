@@ -1,3 +1,4 @@
+# main.py
 import streamlit as st
 from config.settings import Settings
 from backend.api_clients import CoreClient
@@ -41,31 +42,41 @@ with st.spinner("Descargando datos de la flota..."):
     raw_dev = client.get_devicesB()
     raw_dev2 = client.get_devicesKiwi()
     raw_info = client.get_deviceInfo()
+    raw_models = client.get_deviceModels()
+    raw_soft = client.get_deviceSoftware()
+
+    # 1. CREAMOS PRIMERO LOS DATAFRAMES AUXILIARES
+    try:
+        df_models = pd.DataFrame(raw_models)
+        df_soft = pd.DataFrame(raw_soft)
+    except Exception as e:
+        print(f"Error creando DFs auxiliares: {e}")
+        df_models = pd.DataFrame()
+        df_soft = pd.DataFrame()
+
+    # 2. PROCESAMOS LOS DISPOSITIVOS PASANDO LOS DATAFRAMES AUXILIARES
+    # Aquí está el cambio clave: pasamos df_models y df_soft
+    df_dev = prepare_boards(raw_dev, df_models=df_models, df_soft=df_soft)
+    df_dev2 = prepare_kiwi(raw_dev2, df_models=df_models, df_soft=df_soft)
     
-   # Imprimir tipo
-    #print("RAW DEVICES KIWI (tipo):", type(raw_dev2))
-
-    # Mostrar claves principales del dict
-    #print("Claves del dict:", list(raw_dev2.keys()))
-
-    # Mostrar contenido completo de manera legible (opcional)
-    #print("Contenido completo formateado:")
-    #print(json.dumps(raw_dev2, indent=4))  #
-
-    # Procesamos (Limpieza en data_service)
     df_m2m = process_m2m(raw_m2m)
-
-    df_dev = prepare_boards(raw_dev)
-    df_dev2 = prepare_kiwi(raw_dev2)
-    
-
-    #print("Columnas del DataFrame KIWI:", df_dev2.columns.tolist())
-    #print(df_dev2.head())
-
-    # Guardar a Excel
-    df_dev2.to_excel("kiwi.xlsx", index=False)
-
     df_info = process_devicesInfo(raw_info)
+    # --- CREACIÓN DE DATAFRAMES PARA MODELOS Y SOFTWARE ---
+    # Convertimos los datos crudos (que deberían ser listas de diccionarios) a DataFrames.
+    try:
+        df_models = pd.DataFrame(raw_models)
+        df_soft = pd.DataFrame(raw_soft)
+        
+        # Más diagnóstico para ver si tienen datos
+        if not df_models.empty:
+            print(f"DataFrame df_models creado con {len(df_models)} filas.")
+        if not df_soft.empty:
+            print(f"DataFrame df_soft creado con {len(df_soft)} filas.")
+            
+    except Exception as e:
+        print(f"Error al crear DataFrames de modelos/software: {e}")
+        df_models = pd.DataFrame()
+        df_soft = pd.DataFrame()
 
 
 # --- INTERFAZ GRÁFICA ---
@@ -92,6 +103,12 @@ with tab2:
     m2m_view.render(df_m2m)
 
 with tab3:
-
+    # Aquí puedes añadir una vista para modelos y software si es necesario
+    # Por ahora, solo renderizamos la vista de Info que ya tenías
     info_view.render(df_info)
-
+    
+    # Ejemplo de uso de los DataFrames de Modelos y Software (descomentar si se va a usar)
+    # st.subheader("Modelos de Dispositivo")
+    # st.dataframe(df_models)
+    # st.subheader("Versiones de Software")
+    # st.dataframe(df_soft)

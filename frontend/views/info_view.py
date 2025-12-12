@@ -39,7 +39,7 @@ def render(df):
     st.markdown("### ⚙️ Software & Versiones (Quiiotd)")
 
     # ============================================================
-    # 🔧 PREPARACIÓN DE DATOS
+    # PREPARACIÓN DE DATOS
     # ============================================================
 
     # Convertir fechas → datetime naive (sin timezone)
@@ -63,7 +63,7 @@ def render(df):
 
 
     # ============================================================
-    # ⭐ KPIs SUPERIORES
+    # KPIs SUPERIORES
     # ============================================================
 
     total_devices = len(df)
@@ -99,7 +99,7 @@ def render(df):
 
 
     # ============================================================
-    # 📊 HISTOGRAMA VERSIÓN QUIIOTD
+    # HISTOGRAMA VERSIÓN QUIIOTD
     # ============================================================
 
     col1, col2 = st.columns([2, 1])
@@ -125,7 +125,7 @@ def render(df):
 
 
     # ============================================================
-    # 🥧 DIAGRAMA DE TARTA % ACTUALIZADOS
+    # DIAGRAMA DE TARTA % ACTUALIZADOS
     # ============================================================
 
     with col2:
